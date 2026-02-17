@@ -1,183 +1,483 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>Liao Property Management</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="shortcut icon" href="images/favicon.ico">
-    <link href="bootstrap/css/bootstrap.css" rel="stylesheet">
-    <link href="fonts/font-awesome/css/font-awesome.css" rel="stylesheet">
-    <link href="css/style.css" rel="stylesheet">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Slot Machine Lucky Draw</title>
 </head>
-<body class="no-trans">
-    <div class="scrollToTop"><i class="icon-up-open-big"></i></div>
 
-    <header class="header fixed clearfix navbar navbar-fixed-top">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="header-left">
-                        <div class="logo-section smooth-scroll">
-                            <div class="brand"><a href="#banner"><b>LPM</b></a></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-8">
-                    <div class="header-right">
-                        <div class="main-navigation animated">
-                            <nav class="navbar navbar-default" role="navigation">
-                                <div class="container-fluid">
-                                    <div class="navbar-header">
-                                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-1">
-                                            <span class="sr-only">Toggle navigation</span>
-                                            <span class="icon-bar"></span>
-                                            <span class="icon-bar"></span>
-                                            <span class="icon-bar"></span>
-                                        </button>
-                                    </div>
-                                    <div class="collapse navbar-collapse scrollspy smooth-scroll" id="navbar-collapse-1">
-                                        <ul class="nav navbar-nav navbar-right">
-                                            <li class="active"><a href="#banner">Home</a></li>
-                                            <li><a href="#services">Services</a></li>
-                                            <li><a href="#about">About Us</a></li>
-                                            <li><a href="#contact">Contact Us</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </nav>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
+<style>
+  :root{
+    font-family: system-ui, -apple-system, sans-serif;
 
-    <div id="banner" class="banner">
-        <div class="banner-image"></div>
-        <div class="banner-caption">
-            <div data-animation-effect="fadeIn">
-                <h1>Liao Property Management</h1>
-                <h3 class="padding-top30">Your Partner in Professional, Hassle-Free Property Care</h3>
-                <div class="padding-top60 contact-form">
-                    <a href="#services" class="anchor-butto smooth-scroll"><button class="btn cta-button">Explore Services</button></a>
-                </div>
-                <a href="#services" class="smooth-scroll"><i class="fa fa-angle-down"></i></a>
-            </div>
-        </div>
+    /* Casual gameshow theme */
+    --bg:#f6f7fb;
+    --card:#ffffff;
+    --border:#e6e8f0;
+
+    --text:#1f2430;
+    --muted:#667085;
+
+    --accent:#5b7cfa;      /* primary */
+    --accent2:#22c55e;     /* success */
+    --warn:#f59e0b;        /* highlight */
+    --danger:#ef4444;
+
+    --shadow: 0 10px 28px rgba(16,24,40,.10);
+  }
+
+  body{
+    margin:0; min-height:100vh;
+    background:
+      radial-gradient(900px 450px at 10% 0%, rgba(91,124,250,.12), transparent 60%),
+      radial-gradient(700px 450px at 90% 10%, rgba(34,197,94,.10), transparent 60%),
+      radial-gradient(900px 450px at 50% 100%, rgba(245,158,11,.10), transparent 60%),
+      var(--bg);
+    color:var(--text);
+  }
+
+  .wrap{
+    max-width:1200px; margin:0 auto; padding:18px;
+    display:grid; gap:16px; grid-template-columns:380px 1fr;
+  }
+  @media (max-width: 980px){ .wrap{ grid-template-columns:1fr; } }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:14px;
+    box-shadow: var(--shadow);
+  }
+
+  h1{
+    font-size:20px; margin:0 0 10px;
+    color:var(--text);
+  }
+
+  h2{
+    font-size:12px; margin:14px 0 8px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:1.4px;
+  }
+
+  label{ display:block; font-size:11px; color:var(--muted); margin:10px 0 6px; }
+
+  textarea, input, select{
+    width:100%; box-sizing:border-box;
+    border-radius:12px;
+    border:1px solid var(--border);
+    background:#fff;
+    color:var(--text);
+    padding:10px 11px;
+    font-size:14px;
+    outline:none;
+    font-family:inherit;
+  }
+  textarea:focus, input:focus, select:focus{
+    border-color: rgba(91,124,250,.55);
+    box-shadow: 0 0 0 3px rgba(91,124,250,.15);
+  }
+  textarea{ min-height:170px; resize:vertical; }
+
+  button{
+    width:100%; box-sizing:border-box; cursor:pointer;
+    border-radius:12px;
+    border:1px solid rgba(91,124,250,.30);
+    background: linear-gradient(180deg, rgba(91,124,250,.16), rgba(91,124,250,.10));
+    color: var(--text);
+    font-weight:800;
+    padding:10px;
+    font-size:14px;
+    font-family:inherit;
+    text-transform:uppercase;
+    letter-spacing:.9px;
+    transition: transform .08s, box-shadow .12s, background .12s, border-color .12s;
+  }
+  button:hover:not(:disabled){
+    transform: translateY(-1px);
+    border-color: rgba(91,124,250,.45);
+    box-shadow: 0 10px 20px rgba(16,24,40,.10), 0 0 0 3px rgba(91,124,250,.10);
+  }
+  button:active:not(:disabled){ transform: translateY(0px); }
+  button.secondary{
+    border:1px solid var(--border);
+    background:#f3f4f8;
+    color: var(--muted);
+    box-shadow:none;
+  }
+  button.secondary:hover:not(:disabled){
+    box-shadow: 0 0 0 3px rgba(102,112,133,.12);
+  }
+  button:disabled{ opacity:.45; cursor:not-allowed; }
+
+  .row{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+
+  .muted{ font-size:11px; color:var(--muted); line-height:1.4; }
+
+  .pill{ display:inline-flex; gap:8px; align-items:center; font-size:12px; color:var(--muted); }
+  .pill input{ width:auto; }
+
+  .poolPreview{
+    font-size:12px; line-height:1.5; max-height:140px; overflow:auto;
+    padding:10px 11px;
+    border-radius:12px;
+    border:1px dashed var(--border);
+    background:#fafbff;
+    color:var(--muted);
+  }
+
+  .machine{ display:grid; gap:12px; place-items:center; }
+
+  .marquee{
+    width:min(900px, 100%);
+    border-radius:16px;
+    border:1px solid var(--border);
+    background:
+      linear-gradient(180deg, #ffffff, #fbfbff);
+    padding:14px;
+    box-shadow: var(--shadow);
+  }
+
+  .reels{ display:grid; gap:10px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+
+  .reel{
+    position:relative; height:105px; border-radius:16px;
+    border:1px solid var(--border);
+    background:#ffffff;
+    overflow:hidden;
+    transition: border-color .25s, box-shadow .25s, transform .15s;
+  }
+  .reel.landed{
+    border-color: rgba(34,197,94,.45);
+    box-shadow: 0 10px 20px rgba(16,24,40,.10), 0 0 0 3px rgba(34,197,94,.12);
+    transform: translateY(-1px);
+  }
+
+  .reel::before, .reel::after{
+    content:""; position:absolute; left:0; right:0; height:18px; pointer-events:none; z-index:2;
+  }
+  .reel::before{ top:0; background: linear-gradient(180deg, rgba(255,255,255,.95), transparent); }
+  .reel::after{ bottom:0; background: linear-gradient(0deg, rgba(255,255,255,.95), transparent); }
+
+  .window{
+    position:absolute; top:50%; left:10px; right:10px; height:44px;
+    transform: translateY(-50%);
+    border-radius:14px;
+    border:1px solid rgba(91,124,250,.22);
+    background: rgba(91,124,250,.06);
+    z-index:3;
+    transition: border-color .25s, background .25s, box-shadow .25s;
+  }
+  .reel.spinning .window{
+    border-color: rgba(91,124,250,.35);
+    background: rgba(91,124,250,.10);
+    box-shadow: 0 0 0 3px rgba(91,124,250,.10);
+  }
+  .reel.landed .window{
+    border-color: rgba(34,197,94,.40);
+    background: rgba(34,197,94,.10);
+    box-shadow: 0 0 0 3px rgba(34,197,94,.10);
+  }
+
+  .reelText{
+    position:absolute; top:50%; left:12px; right:12px;
+    transform: translateY(-50%);
+    text-align:center;
+    font-weight:900; font-size:14px;
+    color:var(--text);
+    padding:0 4px;
+    word-break:break-word;
+    z-index:4;
+  }
+
+  .lights{ display:flex; gap:7px; justify-content:center; flex-wrap:wrap; margin-top:10px; }
+  .light{
+    width:8px; height:8px; border-radius:999px;
+    background:#e9ecf5;
+    transition: all .1s;
+  }
+  .light.on{ background: var(--warn); box-shadow: 0 0 10px rgba(245,158,11,.35); }
+  .light.red{ background: var(--danger); box-shadow: 0 0 10px rgba(239,68,68,.30); }
+
+  .bigWinner{
+    width:min(900px, 100%);
+    border:1px solid var(--border);
+    background:#ffffff;
+    border-radius:16px;
+    padding:12px;
+    box-shadow: var(--shadow);
+    transition: border-color .25s, box-shadow .25s;
+  }
+  .bigWinner.celebrating{
+    border-color: rgba(245,158,11,.45);
+    box-shadow: var(--shadow), 0 0 0 4px rgba(245,158,11,.12);
+  }
+  .bigWinner .label{ font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
+  .bigWinner .value{ font-size:18px; font-weight:900; margin-top:4px; word-break:break-word; }
+  .bigWinner.celebrating .value{ color: var(--accent); }
+
+  .winnersPanel{
+    width:min(900px, 100%);
+    border:1px solid var(--border);
+    background:#ffffff;
+    border-radius:16px;
+    padding:12px;
+    display:grid; gap:10px;
+    box-shadow: var(--shadow);
+  }
+  .winnersHeader{ color:var(--muted); }
+
+  .winnersGrid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:8px; }
+
+  .chip{
+    border:1px solid var(--border);
+    background:#f6f7fb;
+    border-radius:12px;
+    padding:8px 10px;
+    font-weight:800; font-size:13px;
+    word-break:break-word;
+    animation: chipIn .25s ease-out;
+  }
+  .chip.new{
+    border-color: rgba(34,197,94,.45);
+    background: rgba(34,197,94,.10);
+  }
+  @keyframes chipIn{ from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+
+  #confettiCanvas{ position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:9999; }
+
+  @keyframes spinPulse{
+    0%,100%{ box-shadow: 0 0 0 0 rgba(91,124,250,.18); }
+    50%{ box-shadow: 0 0 0 8px rgba(91,124,250,0); }
+  }
+  #spin:not(:disabled){ animation: spinPulse 2.6s infinite; }
+</style>
+
+
+<body>
+  <canvas id="confettiCanvas"></canvas>
+  <div class="wrap">
+    <div class="card">
+      <h1>Slot Machine Lucky Draw</h1>
+      <div class="muted">Up to 25 reels. Each reel stops on a different winner.</div>
+
+      <h2>Entrants</h2>
+      <label for="entries">One per line or comma-separated</label>
+      <textarea id="entries"></textarea>
+      <div class="row">
+        <div><label for="nStart">Bulk start</label><input id="nStart" type="number" min="1" value="1" /></div>
+        <div><label for="nEnd">Bulk end</label><input id="nEnd" type="number" min="1" value="300" /></div>
+      </div>
+      <div class="row"><button id="bulk">Use 1..N</button></div>
+
+      <h2>Settings</h2>
+      <div class="row">
+        <div><label for="reels"># Reels</label><select id="reels"></select></div>
+        <div><label for="spinSec">Spin time (sec)</label><input id="spinSec" type="number" min="0.5" step="0.5" value="2.0" /></div>
+      </div>
+      <div style="margin-top:10px;">
+        <div class="pill"><input id="noRepeats" type="checkbox" checked /><label for="noRepeats" style="margin:0;">No repeats</label></div>
+      </div>
+      <div style="margin-top:12px;">
+        <label>Pool preview</label>
+        <div id="poolPreview" class="poolPreview"></div>
+        <div class="muted" id="poolMeta"></div>
+      </div>
+      <div class="row" style="margin-top:12px;">
+        <button id="spin">Spin</button>
+        <button id="reset" class="secondary">Reset</button>
+      </div>
     </div>
 
-    <section class="hero-caption secPadding">
-        <div class="container">
-            <p class="lead text-center">At LPM, we specialize in maximizing your rental income and minimizing your headaches. From tenant screening to 24/7 maintenance support, we handle every detail so you can enjoy worry-free investment ownership.</p>
-        </div>
-    </section>
+    <div class="card machine">
+      <div class="marquee">
+        <div class="muted" style="margin-bottom:8px;">Reels stop one-by-one on unique winners.</div>
+        <div class="reels" id="reelsRow"></div>
+        <div class="lights" id="lights"></div>
+      </div>
+      <div class="bigWinner" id="bigWinnerBox">
+        <div class="label">Last spin</div>
+        <div class="value" id="lastWinner">&mdash;</div>
+        <div class="muted" id="lastMeta">&mdash;</div>
+      </div>
+      <div class="winnersPanel">
+        <div class="winnersHeader"><strong>All winners</strong></div>
+        <div class="winnersGrid" id="winnersGrid"></div>
+        <div class="muted" id="winnersMeta">No winners yet.</div>
+      </div>
+    </div>
+  </div>
 
-    <section class="section transprant-bg pclear secPadding">
-        <div class="container" data-animation-effect="fadeIn">
-            <h1 id="services" class="title text-center">What We Offer</h1>
-            <div class="offering-grid">
-                <div class="box box-services">
-                    <div class="icon"><i class="fa fa-bullhorn"></i></div>
-                    <h4 class="heading">Marketing & Leasing</h4>
-                    <p>Ads and listings to fill vacancies quickly.</p>
-                </div>
-                <div class="box box-services">
-                    <div class="icon"><i class="fa fa-search"></i></div>
-                    <h4 class="heading">Tenant Screening</h4>
-                    <p>Credit checks, rental history verification, and background reviews.</p>
-                </div>
-                <div class="box box-services">
-                    <div class="icon"><i class="fa fa-money"></i></div>
-                    <h4 class="heading">Rent Collection</h4>
-                    <p>Online portal with automated reminders for timely deposits.</p>
-                </div>
-                <div class="box box-services">
-                    <div class="icon"><i class="fa fa-wrench"></i></div>
-                    <h4 class="heading">Maintenance & Repairs</h4>
-                    <p>Network of licensed contractors for emergency and routine work.</p>
-                </div>
-                <div class="box box-services">
-                    <div class="icon"><i class="fa fa-line-chart"></i></div>
-                    <h4 class="heading">Financial Reporting</h4>
-                    <p>Monthly statements, expense tracking, and year-end summaries.</p>
-                </div>
-                <div class="box box-services">
-                    <div class="icon"><i class="fa fa-users"></i></div>
-                    <h4 class="heading">Customer Care</h4>
-                    <p>Dedicated support for owner and tenant inquiries.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+  <script type="module">
+    const $ = id => document.getElementById(id);
+    const entriesTA=$("entries"), nStart=$("nStart"), nEnd=$("nEnd");
+    const bulkBtn=$("bulk"), reelsSel=$("reels"), spinSecInp=$("spinSec");
+    const noRepeatsChk=$("noRepeats"), spinBtn=$("spin"), resetBtn=$("reset");
+    const poolPreview=$("poolPreview"), poolMeta=$("poolMeta");
+    const reelsRow=$("reelsRow"), lights=$("lights");
+    const lastWinner=$("lastWinner"), lastMeta=$("lastMeta"), bigWinnerBox=$("bigWinnerBox");
+    const winnersGrid=$("winnersGrid"), winnersMeta=$("winnersMeta");
 
-    <!-- About Us -->
-    <section id="about" class="section clearfix secPadding" data-animation-effect="fadeIn">
-        <div class="container">
-            <h1 class="title text-center">About Us</h1>
-            <p class="lead text-center">LPM is a private family business that manages a portfolio of properties around the GTA. Today, we extend that same trusted service to private investors and family offices.</p>
-            <div class="row">
-                <div class="col-md-8 col-md-offset-2">
-                    <p>With over 15 years of combined experience, our family-led team creates personalized management plans that treat every property as our own. From proactive maintenance and cost optimization to clear, real-time reporting, we take care of all the details.</p>
-                    <ul class="list-unstyled">
-                        <li><i class="fa fa-arrow-circle-right pr-10 colored"></i>Accountability - We work hard on keeping our promises to our investors</li>
-                        <li><i class="fa fa-arrow-circle-right pr-10 colored"></i>Integrity - We keep the highest standards of business ethics</li>
-                        <li><i class="fa fa-arrow-circle-right pr-10 colored"></i>Loyalty - We are loyal to our investors and business partners</li>
-                    </ul>
-                    <p>Whether you’re a longtime friend, a family office, or a first-time investor, LPM is your partner in worry-free property ownership.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+    let pool={items:[],original:[]}, winners=[], spinning=false;
 
-    <!-- Contact & Footer -->
-    <footer id="footer">
-        <div class="footer section">
-            <div class="container">
-                <h1 class="title text-center" id="contact">Contact Us</h1>
-                <div class="row">
-                    <div class="col-sm-6">
-                        <div class="footer-content">
-                            <form role="form" id="footer-form" action="mailto:liaopropertymanagement@gmail.com" method="post" enctype="text/plain">
-                                <div class="form-group has-feedback">
-                                    <label class="sr-only" for="name2">Name</label>
-                                    <input type="text" class="form-control" id="name2" placeholder="Name" name="name2" required>
-                                    <i class="fa fa-user form-control-feedback"></i>
-                                </div>	
-                                <div class="form-group has-feedback">
-                                    <label class="sr-only" for="email2">Email address</label>
-                                    <input type="email" class="form-control" id="email2" placeholder="Enter email" name="email2" required>
-                                    <i class="fa fa-envelope form-control-feedback"></i>
-                                </div>
-                                <div class="form-group has-feedback">
-                                    <label class="sr-only" for="message2">Message</label>
-                                    <textarea class="form-control" rows="6" id="message2" placeholder="Message" name="message2" required></textarea>
-                                    <i class="fa fa-pencil form-control-feedback"></i>
-                                </div>
-                                <input type="submit" value="Send" class="btn btn-default">
-                            </form>
-                        </div>
-                    </div>
-                    <div class="col-sm-6">
-                        <div class="footer-content">
-                            <div class="widget-content">
-                                <p>Have questions or looking for employment opportunities? Reach out to our team.</p>
-                                <p class="contacts"><i class="fa fa-map-marker"></i> 6700 Century Ave Office 363, Mississauga, ON L5N 6A4</p>
-                                <p class="contacts"><i class="fa fa-phone"></i> 647-472-8718</p>
-                                <p class="contacts"><i class="fa fa-envelope"></i> liaopropertymanagement@gmail.com</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </footer>
+    // Confetti
+    const canvas=$("confettiCanvas"), ctx=canvas.getContext("2d");
+    let pieces=[], cfRun=false;
+    function resize(){canvas.width=innerWidth;canvas.height=innerHeight;}
+    addEventListener("resize",resize); resize();
 
-    <script src="plugins/jquery.min.js"></script>
-    <script src="bootstrap/js/bootstrap.min.js"></script>
-    <script src="plugins/modernizr.js"></script>
-    <script src="plugins/isotope/isotope.pkgd.min.js"></script>
-    <script src="plugins/jquery.backstretch.min.js"></script>
-    <script src="plugins/jquery.appear.js"></script>
-    <script src="js/custom.js"></script>
+    const CFC=["#d4a030","#c05030","#e0b030","#fff","#aaa"];
+    function launchConfetti(n=70){
+      pieces=[];
+      for(let i=0;i<n;i++) pieces.push({
+        x:Math.random()*canvas.width, y:-12-Math.random()*250,
+        w:4+Math.random()*5, h:3+Math.random()*3,
+        color:CFC[(Math.random()*CFC.length)|0],
+        vx:(Math.random()-.5)*3.5, vy:1.8+Math.random()*3.5,
+        rot:Math.random()*6.28, rotV:(Math.random()-.5)*.18, life:1,
+      });
+      if(!cfRun){cfRun=true;drawCf();}
+    }
+    function drawCf(){
+      if(!pieces.length){cfRun=false;ctx.clearRect(0,0,canvas.width,canvas.height);return;}
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      for(let i=pieces.length-1;i>=0;i--){
+        const p=pieces[i];
+        p.x+=p.vx;p.y+=p.vy;p.vy+=.055;p.vx*=.999;p.rot+=p.rotV;p.life-=.004;
+        if(p.life<=0||p.y>canvas.height+12){pieces.splice(i,1);continue;}
+        ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);
+        ctx.globalAlpha=Math.min(1,p.life*2);
+        ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+        ctx.restore();
+      }
+      requestAnimationFrame(drawCf);
+    }
+
+    // Reel spin with slowdown
+    function startSpin(el,target){
+      let ms=38, stopped=false;
+      el.closest(".reel")?.classList.add("spinning");
+      const tick=()=>{
+        if(stopped||!pool.items.length)return;
+        let r=pool.items[(Math.random()*pool.items.length)|0];
+        if(target&&r.toLowerCase()===target.toLowerCase()&&pool.items.length>1)
+          r=pool.items[(Math.random()*pool.items.length)|0];
+        el.textContent=r;
+        setTimeout(tick,ms);
+      };
+      tick();
+      return{
+        stop(dur){
+          return new Promise(res=>{
+            let step=0,steps=7,dt=dur/steps;
+            const slow=()=>{
+              if(++step>=steps){stopped=true;el.textContent=target??"\u2014";
+                const reel=el.closest(".reel");
+                reel?.classList.remove("spinning");reel?.classList.add("landed");
+                return res();}
+              ms=38+(step/steps)*190;
+              setTimeout(slow,dt);
+            };
+            slow();
+          });
+        }
+      };
+    }
+
+    for(let i=1;i<=25;i++){const o=document.createElement("option");o.value=o.textContent=String(i);if(i===10)o.selected=true;reelsSel.appendChild(o);}
+
+    const clamp=(v,lo,hi)=>{const n=Math.floor(Number(v));return Number.isFinite(n)?Math.max(lo,Math.min(hi,n)):lo;};
+    const parse=t=>{const s=new Set(),o=[];for(const x of t.split(/[\n,]+/).map(s=>s.trim()).filter(Boolean)){const k=x.toLowerCase();if(!s.has(k)){s.add(k);o.push(x);}}return o;};
+    const range=(a,b)=>{const s=Math.min(a,b),e=Math.max(a,b),o=[];for(let i=s;i<=e;i++)o.push(String(i));return o;};
+    const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+    function setUI(on){
+      spinning=!on;
+      [spinBtn,bulkBtn,resetBtn,entriesTA,reelsSel,spinSecInp,noRepeatsChk,nStart,nEnd].forEach(el=>el.disabled=!on);
+      spinBtn.disabled=!on||!pool.items.length;
+    }
+
+    function setLights(on){
+      const nodes=[...lights.children];
+      if(!on){nodes.forEach(n=>{n.classList.remove("on","red");});return;}
+      let idx=0;
+      const f=()=>{if(!spinning)return;
+        nodes.forEach(n=>n.classList.remove("on","red"));
+        for(let k=0;k<4;k++)nodes[(idx+k*5)%nodes.length].classList.add(k%2?"red":"on");
+        idx=(idx+1)%nodes.length;requestAnimationFrame(f);};
+      f();
+    }
+    function celebrateLights(){
+      const nodes=[...lights.children];
+      nodes.forEach(n=>n.classList.add("on"));
+      setTimeout(()=>nodes.forEach(n=>n.classList.remove("on")),1200);
+    }
+
+    function render(){
+      const n=Number(reelsSel.value)||10;
+      reelsRow.innerHTML="";lights.innerHTML="";
+      for(let i=0;i<n;i++){const d=document.createElement("div");d.className="reel";d.innerHTML=`<div class="window"></div><div class="reelText" id="r${i}">\u2014</div>`;reelsRow.appendChild(d);}
+      for(let i=0;i<20;i++){const d=document.createElement("div");d.className="light";lights.appendChild(d);}
+      setLights(false);
+    }
+
+    function syncPool(){
+      const c=pool.items.length,p=pool.items.slice(0,200);
+      poolPreview.textContent=c?p.join(", ")+(c>200?` \u2026 (+${c-200})`:""):"Empty";
+      poolMeta.textContent=`${c} entrants${noRepeatsChk.checked?" (winners removed)":""}`;
+      spinBtn.disabled=!c||spinning;
+    }
+
+    function syncWinners(newN=0){
+      winnersGrid.innerHTML="";
+      winners.forEach((w,i)=>{const d=document.createElement("div");d.className="chip"+(i>=winners.length-newN?" new":"");d.textContent=w;winnersGrid.appendChild(d);});
+      winnersMeta.textContent=winners.length?`${winners.length} total`:"No winners yet.";
+    }
+
+    const setLast=(n,m)=>{lastWinner.textContent=n||"\u2014";lastMeta.textContent=m||"\u2014";};
+    const pick=(arr,k)=>{const n=arr.length,kk=Math.min(k,n),idx=[...Array(n).keys()];for(let i=0;i<kk;i++){const j=i+Math.floor(Math.random()*(n-i));[idx[i],idx[j]]=[idx[j],idx[i]];}return idx.slice(0,kk).map(i=>arr[i]);};
+
+    async function doSpin(){
+      if(spinning||!pool.items.length)return;
+      const nReels=Number(reelsSel.value)||10, sec=Math.max(.6,Number(spinSecInp.value)||2);
+      const picked=pick(pool.items,Math.min(nReels,pool.items.length));
+
+      setUI(false);setLights(true);bigWinnerBox.classList.remove("celebrating");
+      reelsRow.querySelectorAll(".reel").forEach(r=>{r.classList.remove("landed");r.classList.remove("spinning");});
+
+      const els=[...Array(nReels).keys()].map(i=>$(`r${i}`));
+      const spinners=els.map((el,i)=>el?startSpin(el,picked[i]):null);
+
+      const slowDur=550,stagger=Math.max(85,Math.floor((sec*1000-slowDur)/(nReels+1)));
+      for(let i=0;i<spinners.length;i++){if(!spinners[i])continue;await sleep(stagger);await spinners[i].stop(slowDur);}
+      await sleep(180);
+
+      const got=picked.filter(Boolean);
+      winners.push(...got);
+      setLast(got.join(" \u2022 "),`${got.length} winner(s) \u2022 ${winners.length} total`);
+
+      bigWinnerBox.classList.add("celebrating");
+      celebrateLights();
+      launchConfetti(60+got.length*6);
+
+      if(noRepeatsChk.checked){const rm=new Set(got.map(x=>x.toLowerCase()));pool.items=pool.items.filter(x=>!rm.has(x.toLowerCase()));}
+      syncPool();syncWinners(got.length);setLights(false);setUI(true);
+      setTimeout(()=>bigWinnerBox.classList.remove("celebrating"),3000);
+    }
+
+    function apply(){const p=parse(entriesTA.value);pool={items:p.slice(),original:p.slice()};winners=[];setLast("\u2014","\u2014");syncPool();syncWinners();render();}
+    function reset(){pool.items=pool.original.slice();winners=[];setLast("\u2014","\u2014");syncPool();syncWinners();render();}
+
+    bulkBtn.addEventListener("click",()=>{entriesTA.value=range(clamp(nStart.value,1,1e9),clamp(nEnd.value,1,1e9)).join("\n");apply();});
+    entriesTA.addEventListener("input",apply);
+    resetBtn.addEventListener("click",reset);
+    reelsSel.addEventListener("change",render);
+    spinBtn.addEventListener("click",doSpin);
+
+    entriesTA.value=range(1,300).join("\n");
+    apply();render();
+  </script>
 </body>
 </html>
