@@ -305,13 +305,31 @@
     border:2px solid rgba(239,68,68,.35);
     box-shadow: 0 10px 18px rgba(16,24,40,.12);
   }
-  canvas#wheelCanvas{
-    width:min(560px, 100%);
-    height:auto;
-    aspect-ratio: 1/1;
-    display:block;
-  }
+/* A shared square "stage" so canvas + overlay have identical center */
+.wheelStage{
+  position: relative;
+  width: min(560px, 100%);
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: center;
+}
 
+/* Let the canvas fill the stage (no separate sizing rules) */
+canvas#wheelCanvas{
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Now center overlay is centered to the same stage */
+.wheelCenter{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  pointer-events:none;
+  z-index:5;
+}
   /* Fixed center (does not spin) */
 .wheelCenter{
   position:absolute;
@@ -501,9 +519,10 @@
 
         <!-- removed pool preview -->
 
-        <div class="row" style="margin-top:12px;">
+        <div class="row" style="margin-top:12px; grid-template-columns: 1fr 1fr 1fr;">
           <button id="spin">Spin</button>
           <button id="reset" class="secondary">Reset</button>
+          <button id="undo" class="secondary">Undo</button>
         </div>
       </div>
 
@@ -544,36 +563,33 @@
           <div class="muted" id="lastMeta">&mdash;</div>
         </div>
 
-        <div class="winnersPanel">
-          <div class="winnersHeader"><strong>All winners (slot)</strong></div>
-          <div class="winnersGrid" id="winnersGrid"></div>
-          <div class="muted" id="winnersMeta">No winners yet.</div>
-        </div>
       </div>
 
       <!-- WHEEL VIEW -->
       <div id="viewWheel" style="display:none; width:100%;">
         <div class="wheelWrap">
-          <div class="wheelCard">
-            <div class="pointer" aria-hidden="true"></div>
-            <canvas id="wheelCanvas" width="840" height="840"></canvas>
+<div class="wheelCard">
+  <div class="pointer" aria-hidden="true"></div>
 
-            <!-- fixed overlay center (does NOT spin) -->
-            <div class="wheelCenter" aria-hidden="true">
-              <div class="wheelCenterInner">
-                <div>
-                  <div class="wheelCenterValue" id="wheelCenterValue">—</div>
-                </div>
-              </div>
-            </div>
-          </div>
+  <div class="wheelStage">
+    <canvas id="wheelCanvas" width="840" height="840"></canvas>
 
-          <div class="winnersPanel">
-            <div class="winnersHeader"><strong>Wheel winners</strong></div>
-            <div class="winnersGrid" id="wheelWinnersGrid"></div>
-            <div class="muted" id="wheelWinnersMeta">No winners yet.</div>
-          </div>
+    <!-- fixed overlay center (does NOT spin) -->
+    <div class="wheelCenter" aria-hidden="true">
+      <div class="wheelCenterInner">
+        <div class="wheelCenterValue" id="wheelCenterValue">—</div>
+      </div>
+    </div>
+  </div>
+</div>
         </div>
+      </div>
+
+      <!-- Combined winners panel -->
+      <div class="winnersPanel" id="allWinnersPanel">
+        <div class="winnersHeader"><strong>All winners</strong></div>
+        <div class="winnersGrid" id="winnersGrid"></div>
+        <div class="muted" id="winnersMeta">No winners yet.</div>
       </div>
     </div>
   </div>
@@ -602,8 +618,6 @@
     const wheelSpinBtn = $("wheelSpinBtn");
     const wheelResetBtn = $("wheelResetBtn");
     const wheelCanvas = $("wheelCanvas");
-    const wheelWinnersGrid = $("wheelWinnersGrid");
-    const wheelWinnersMeta = $("wheelWinnersMeta");
     const wheelCenterValue = $("wheelCenterValue");
 
     // Winner modal
@@ -619,6 +633,100 @@
     let pool={items:[], original:[]};
     let slotWinners=[], wheelWinners=[];
     let spinning=false, wheelSpinning=false;
+
+    // ===== Persistence + Undo =====
+    const STORAGE_KEY = "lucky_draw_state_v1";
+    let lastSnapshot = null; // one-step undo
+
+    function snapshotState(){
+      return {
+        entriesText: entriesTA.value,
+        pool: { items: pool.items.slice(), original: pool.original.slice() },
+        slotWinners: slotWinners.slice(),
+        wheelWinners: wheelWinners.slice(),
+        wheelAngle,
+        activeTab: viewWheel.style.display !== "none" ? "wheel" : "slot",
+        settings: {
+          noRepeats: !!noRepeatsChk.checked,
+          wheelNoRepeats: !!wheelNoRepeatsChk.checked,
+          reels: String(reelsSel.value ?? "10"),
+          spinSec: String(spinSecInp.value ?? "2.0")
+        }
+      };
+    }
+
+    function applySnapshot(s){
+      if(!s) return;
+
+      entriesTA.value = s.entriesText ?? entriesTA.value;
+
+      pool = {
+        items: (s.pool?.items ?? []).slice(),
+        original: (s.pool?.original ?? []).slice(),
+      };
+      slotWinners = (s.slotWinners ?? []).slice();
+      wheelWinners = (s.wheelWinners ?? []).slice();
+      wheelAngle = typeof s.wheelAngle === "number" ? s.wheelAngle : 0;
+
+      if(s.settings){
+        if(typeof s.settings.noRepeats === "boolean") noRepeatsChk.checked = s.settings.noRepeats;
+        if(typeof s.settings.wheelNoRepeats === "boolean") wheelNoRepeatsChk.checked = s.settings.wheelNoRepeats;
+        if(s.settings.reels != null) reelsSel.value = String(s.settings.reels);
+        if(s.settings.spinSec != null) spinSecInp.value = String(s.settings.spinSec);
+      }
+
+      renderSlot();
+      drawWheel();
+      wheelCenterValue.textContent = currentUnderPointer();
+      syncWinners();
+
+      if(s.activeTab === "wheel") setActiveTab("wheel");
+      else setActiveTab("slot");
+
+      spinBtn.disabled = spinning || !pool.items.length;
+      wheelSpinBtn.disabled = wheelSpinning || !pool.items.length;
+    }
+
+    function saveToLocalStorage(){
+      try{
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshotState()));
+      }catch(e){}
+    }
+
+    function loadFromLocalStorage(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw) return false;
+        const s = JSON.parse(raw);
+        applySnapshot(s);
+        return true;
+      }catch(e){
+        return false;
+      }
+    }
+
+    function clearLocalStorage(){
+      try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+    }
+
+    function syncEntrantsTextareaToPool(){
+      entriesTA.value = pool.items.join("\n");
+    }
+
+    function pushUndoSnapshot(){
+      lastSnapshot = snapshotState();
+      const undoBtn = $("undo");
+      if(undoBtn) undoBtn.disabled = false;
+    }
+
+    function doUndo(){
+      if(!lastSnapshot) return;
+      applySnapshot(lastSnapshot);
+      saveToLocalStorage();
+      lastSnapshot = null;
+      const undoBtn = $("undo");
+      if(undoBtn) undoBtn.disabled = true;
+    }
 
     // Confetti
     const confettiCanvas=$("confettiCanvas"), confCtx=confettiCanvas.getContext("2d");
@@ -710,26 +818,23 @@
     tabWheel.addEventListener("click", ()=>setActiveTab("wheel"));
 
     // Winners sync
-    function syncSlotWinners(newN=0){
+    function syncWinners(newN=0){
+      const all = [
+        ...slotWinners.map(w => ({ name: w, src: "slot" })),
+        ...wheelWinners.map(w => ({ name: w, src: "wheel" })),
+      ];
       winnersGrid.innerHTML="";
-      slotWinners.forEach((w,i)=>{
+      const totalNew = newN;
+      all.forEach((w,i)=>{
         const d=document.createElement("div");
-        d.className="chip"+(i>=slotWinners.length-newN?" new":"");
-        d.textContent=w;
+        d.className="chip"+(i>=all.length-totalNew?" new":"");
+        d.textContent=w.name;
         winnersGrid.appendChild(d);
       });
-      winnersMeta.textContent=slotWinners.length?`${slotWinners.length} total`:"No winners yet.";
-    }
-
-    function syncWheelWinners(newN=0){
-      wheelWinnersGrid.innerHTML="";
-      wheelWinners.forEach((w,i)=>{
-        const d=document.createElement("div");
-        d.className="chip"+(i>=wheelWinners.length-newN?" new":"");
-        d.textContent=w;
-        wheelWinnersGrid.appendChild(d);
-      });
-      wheelWinnersMeta.textContent=wheelWinners.length?`${wheelWinners.length} total`:"No winners yet.";
+      const total = all.length;
+      winnersMeta.textContent = total
+        ? `${total} total (${slotWinners.length} slot, ${wheelWinners.length} wheel)`
+        : "No winners yet.";
     }
 
     // UI lock
@@ -811,6 +916,7 @@
 
     async function doSlotSpin(){
       if(spinning||!pool.items.length) return;
+      pushUndoSnapshot();
 
       const nReels=Number(reelsSel.value)||10;
       const sec=Math.max(.6,Number(spinSecInp.value)||2);
@@ -843,11 +949,13 @@
       if(noRepeatsChk.checked){
         const rm = new Set(got.map(x=>x.toLowerCase()));
         pool.items = pool.items.filter(x=>!rm.has(x.toLowerCase()));
+        syncEntrantsTextareaToPool();
       }
 
-      syncSlotWinners(got.length);
+      syncWinners(got.length);
       setLights(false);
       setUI(true);
+      saveToLocalStorage();
       setTimeout(()=>bigWinnerBox.classList.remove("celebrating"),3000);
     }
 
@@ -856,13 +964,16 @@
       slotWinners = [];
       wheelWinners = [];
       setLast("—","—");
-      syncSlotWinners();
-      syncWheelWinners();
+      syncWinners();
       renderSlot();
       wheelAngle = 0;
       drawWheel();
       closeWinnerModal();
       wheelCenterValue.textContent = "—";
+      clearLocalStorage();
+      const undoBtnR = $("undo");
+      if(undoBtnR) undoBtnR.disabled = true;
+      lastSnapshot = null;
     }
 
     // ===== Wheel =====
@@ -1020,6 +1131,7 @@
 
     async function doWheelSpin(){
       if(wheelSpinning || !pool.items.length) return;
+      pushUndoSnapshot();
 
       wheelSpinning = true;
       setUI(false);
@@ -1070,9 +1182,11 @@
       if(wheelNoRepeatsChk.checked){
         const rm = name.toLowerCase();
         pool.items = pool.items.filter(x => x.toLowerCase() !== rm);
+        syncEntrantsTextareaToPool();
       }
 
-      syncWheelWinners(1);
+      syncWinners(1);
+      saveToLocalStorage();
 
       openWinnerModal(
         name,
@@ -1091,13 +1205,16 @@
       slotWinners = [];
       wheelWinners = [];
       setLast("—","—");
-      syncSlotWinners();
-      syncWheelWinners();
+      syncWinners();
       renderSlot();
       wheelAngle = 0;
       drawWheel();
       wheelCenterValue.textContent = currentUnderPointer();
       closeWinnerModal();
+      saveToLocalStorage();
+      const undoBtnA = $("undo");
+      if(undoBtnA) undoBtnA.disabled = true;
+      lastSnapshot = null;
     }
 
     // Init reels dropdown
@@ -1122,10 +1239,31 @@
     wheelResetBtn.addEventListener("click", resetAll);
     wheelSpinBtn.addEventListener("click", doWheelSpin);
 
-    // Initial content
-    entriesTA.value = range(1,300).join("\n");
-    apply();
-    setActiveTab("slot");
+    // Undo button
+    const undoBtn = $("undo");
+    if(undoBtn){
+      undoBtn.addEventListener("click", doUndo);
+      undoBtn.disabled = true;
+    }
+
+    // Auto-save when user edits entrants
+    entriesTA.addEventListener("input", () => {
+      setTimeout(saveToLocalStorage, 0);
+    });
+
+    // Auto-save when toggles/settings change
+    noRepeatsChk.addEventListener("change", saveToLocalStorage);
+    wheelNoRepeatsChk.addEventListener("change", saveToLocalStorage);
+    reelsSel.addEventListener("change", saveToLocalStorage);
+    spinSecInp.addEventListener("input", () => { clearTimeout(spinSecInp._t); spinSecInp._t=setTimeout(saveToLocalStorage,150); });
+
+    // Restore from localStorage or default init
+    const restored = loadFromLocalStorage();
+    if(!restored){
+      entriesTA.value = range(1,300).join("\n");
+      apply();
+      setActiveTab("slot");
+    }
   </script>
 </body>
 </html>
